@@ -1,163 +1,135 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Mail, CheckCircle, Clock, AlertTriangle, LogOut, UserCheck } from "lucide-react";
+import { 
+  Search, 
+  Mail, 
+  CheckCircle, 
+  XCircle, 
+  Clock, 
+  LogOut, 
+  Building2,
+  FileText,
+  Users
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useClearanceData } from "@/hooks/useClearanceData";
 import { useToast } from "@/hooks/use-toast";
 
-interface Student {
-  id: string;
-  studentId: string;
-  name: string;
-  department: string;
-  status: "cleared" | "pending" | "outstanding";
-  lastUpdated: string;
-  remarks?: string;
-  email?: string;
-}
-
 const DepartmentDashboard = () => {
-  const [students, setStudents] = useState<Student[]>([
-    {
-      id: "1",
-      studentId: "12345678",
-      name: "John Doe",
-      department: "Computer Science",
-      status: "pending",
-      lastUpdated: "2024-01-10",
-      remarks: "Pending lab equipment return verification",
-      email: "john.doe@student.unitech.ac.pg"
-    },
-    {
-      id: "2", 
-      studentId: "12345679",
-      name: "Jane Smith",
-      department: "Computer Science",
-      status: "cleared",
-      lastUpdated: "2024-01-15",
-      email: "jane.smith@student.unitech.ac.pg"
-    },
-    {
-      id: "3",
-      studentId: "12345680", 
-      name: "Bob Wilson",
-      department: "Computer Science",
-      status: "outstanding",
-      lastUpdated: "2024-01-08",
-      remarks: "Missing final project submission",
-      email: "bob.wilson@student.unitech.ac.pg"
-    }
-  ]);
-
+  const { departmentProfile, signOut, loading, userType } = useAuth();
+  const { clearanceData, loading: clearanceLoading, updateClearanceStatus, sendReminderEmail } = useClearanceData();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [updateForm, setUpdateForm] = useState({
-    status: "",
-    remarks: ""
-  });
-
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [clearanceNotes, setClearanceNotes] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<'pending' | 'cleared' | 'blocked'>('pending');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  // Current department (would be passed from authentication)
-  const currentDepartment = "Computer Science Department";
+  // Redirect if not authenticated as department user
+  useEffect(() => {
+    if (!loading && (!departmentProfile || userType !== 'department')) {
+      navigate('/');
+    }
+  }, [departmentProfile, userType, loading, navigate]);
 
-  const filteredStudents = students.filter(student =>
-    student.studentId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.name.toLowerCase().includes(searchQuery.toLowerCase())
+  if (loading || clearanceLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!departmentProfile) {
+    return null;
+  }
+
+  const filteredStudents = clearanceData.filter((record: any) =>
+    record.student?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    record.student?.student_id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const pendingCount = clearanceData.filter((s: any) => s.status === "pending").length;
+  const clearedCount = clearanceData.filter((s: any) => s.status === "cleared").length;
+  const blockedCount = clearanceData.filter((s: any) => s.status === "blocked").length;
+
+  const updateStudentStatus = async (studentId: string, status: 'pending' | 'cleared' | 'blocked') => {
+    if (!departmentProfile) return;
+    
+    setUpdatingStatus(true);
+    try {
+      await updateClearanceStatus(studentId, departmentProfile.department, status, clearanceNotes);
+      setSelectedStudent(null);
+      setClearanceNotes("");
+      setSelectedStatus('pending');
+    } catch (error) {
+      // Error handled in hook
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const sendReminder = async (studentId: string) => {
+    await sendReminderEmail(studentId);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "cleared":
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
+        return <CheckCircle className="w-4 h-4 text-success" />;
+      case "blocked":
+        return <XCircle className="w-4 h-4 text-destructive" />;
       case "pending":
-        return <Clock className="w-4 h-4 text-yellow-600" />;
-      case "outstanding":
-        return <AlertTriangle className="w-4 h-4 text-red-600" />;
       default:
-        return <Clock className="w-4 h-4 text-gray-400" />;
+        return <Clock className="w-4 h-4 text-warning" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "cleared":
-        return <Badge className="bg-green-100 text-green-800">Cleared</Badge>;
+        return <Badge variant="default">Cleared</Badge>;
+      case "blocked":
+        return <Badge variant="destructive">Blocked</Badge>;
       case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-      case "outstanding":
-        return <Badge variant="destructive">Outstanding</Badge>;
       default:
-        return <Badge variant="outline">Unknown</Badge>;
+        return <Badge variant="secondary">Pending</Badge>;
     }
-  };
-
-  const handleUpdateStudent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedStudent) return;
-
-    const updatedStudents = students.map(student =>
-      student.id === selectedStudent.id
-        ? {
-            ...student,
-            status: updateForm.status as "cleared" | "pending" | "outstanding",
-            remarks: updateForm.remarks,
-            lastUpdated: new Date().toISOString().split('T')[0]
-          }
-        : student
-    );
-
-    setStudents(updatedStudents);
-    setSelectedStudent(null);
-    setUpdateForm({ status: "", remarks: "" });
-
-    toast({
-      title: "Student record updated",
-      description: `${selectedStudent.name}'s clearance status has been updated.`,
-    });
-  };
-
-  const handleSendReminder = (student: Student) => {
-    // TODO: Implement email reminder functionality
-    toast({
-      title: "Reminder sent",
-      description: `Reminder email sent to ${student.name} at ${student.email}`,
-    });
-  };
-
-  const handleLogout = () => {
-    // TODO: Implement logout functionality
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully.",
-    });
-  };
-
-  const stats = {
-    total: students.length,
-    cleared: students.filter(s => s.status === "cleared").length,
-    pending: students.filter(s => s.status === "pending").length,
-    outstanding: students.filter(s => s.status === "outstanding").length,
   };
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
       <header className="bg-primary text-primary-foreground p-4">
         <div className="container mx-auto flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">Department Dashboard</h1>
-            <p className="text-primary-foreground/80">{currentDepartment}</p>
+          <div className="flex items-center space-x-4">
+            <div className="bg-primary-foreground/10 p-3 rounded-full">
+              <Building2 className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-primary-foreground">{departmentProfile.department}</h1>
+              <p className="text-primary-foreground/80">Officer: {departmentProfile.full_name}</p>
+              <p className="text-primary-foreground/80">{departmentProfile.email}</p>
+            </div>
           </div>
-          <Button 
-            variant="secondary" 
-            onClick={handleLogout}
-            className="text-primary bg-primary-foreground hover:bg-primary-foreground/90"
-          >
+          <Button variant="secondary" onClick={handleLogout}>
             <LogOut className="w-4 h-4 mr-2" />
             Logout
           </Button>
@@ -169,41 +141,67 @@ const DepartmentDashboard = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+              <CardTitle className="text-sm font-medium flex items-center">
+                <Users className="w-4 h-4 mr-2" />
+                Total Students
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-2xl font-bold">{clearanceData.length}</div>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-green-600">Cleared</CardTitle>
+              <CardTitle className="text-sm font-medium text-success flex items-center">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Cleared
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.cleared}</div>
+              <div className="text-2xl font-bold text-success">{clearedCount}</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-yellow-600">Pending</CardTitle>
+              <CardTitle className="text-sm font-medium text-warning flex items-center">
+                <Clock className="w-4 h-4 mr-2" />
+                Pending
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+              <div className="text-2xl font-bold text-warning">{pendingCount}</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-red-600">Outstanding</CardTitle>
+              <CardTitle className="text-sm font-medium text-destructive flex items-center">
+                <XCircle className="w-4 h-4 mr-2" />
+                Blocked
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.outstanding}</div>
+              <div className="text-2xl font-bold text-destructive">{blockedCount}</div>
             </CardContent>
           </Card>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search by student ID or name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+
+        {/* Student Management */}
         <Tabs defaultValue="students" className="w-full">
           <TabsList>
             <TabsTrigger value="students">Student Records</TabsTrigger>
@@ -211,78 +209,77 @@ const DepartmentDashboard = () => {
           </TabsList>
 
           <TabsContent value="students">
-            {/* Search Bar */}
-            <div className="mb-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Search by student ID or name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            {/* Student List */}
             <div className="space-y-4">
-              {filteredStudents.map((student) => (
-                <Card key={student.id}>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          {getStatusIcon(student.status)}
-                          {student.name}
-                        </CardTitle>
-                        <CardDescription>
-                          Student ID: {student.studentId} | Department: {student.department}
-                        </CardDescription>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {getStatusBadge(student.status)}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {student.remarks && (
-                        <div className="p-3 bg-muted rounded-md">
-                          <p className="text-sm font-medium">Remarks:</p>
-                          <p className="text-sm text-muted-foreground">{student.remarks}</p>
-                        </div>
-                      )}
-                      <div className="flex justify-between items-center text-sm text-muted-foreground">
-                        <span>Last updated: {new Date(student.lastUpdated).toLocaleDateString()}</span>
-                        <div className="space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedStudent(student);
-                              setUpdateForm({
-                                status: student.status,
-                                remarks: student.remarks || ""
-                              });
-                            }}
-                          >
-                            <UserCheck className="w-4 h-4 mr-1" />
-                            Update
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSendReminder(student)}
-                          >
-                            <Mail className="w-4 h-4 mr-1" />
-                            Remind
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+              {filteredStudents.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <p className="text-muted-foreground">No students found matching your search.</p>
                   </CardContent>
                 </Card>
-              ))}
+              ) : (
+                filteredStudents.map((record: any) => (
+                  <Card key={record.student?.id}>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="flex items-center gap-2">
+                            {getStatusIcon(record.status)}
+                            {record.student?.full_name}
+                          </CardTitle>
+                          <CardDescription>
+                            Student ID: {record.student?.student_id} | Department: {record.student?.department}
+                          </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(record.status)}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {record.notes && (
+                          <div className="p-3 bg-muted rounded-md">
+                            <p className="text-sm font-medium">Notes:</p>
+                            <p className="text-sm text-muted-foreground">{record.notes}</p>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center text-sm text-muted-foreground">
+                          <div>
+                            {record.cleared_at && (
+                              <span>Cleared: {new Date(record.cleared_at).toLocaleDateString()}</span>
+                            )}
+                            {record.cleared_by && (
+                              <span> by {record.cleared_by}</span>
+                            )}
+                          </div>
+                          <div className="space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedStudent(record);
+                                setClearanceNotes(record.notes || "");
+                                setSelectedStatus(record.status);
+                              }}
+                            >
+                              <FileText className="w-4 h-4 mr-1" />
+                              Update
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => sendReminder(record.student?.id)}
+                            >
+                              <Mail className="w-4 h-4 mr-1" />
+                              Remind
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -292,53 +289,53 @@ const DepartmentDashboard = () => {
                 <CardHeader>
                   <CardTitle>Update Student Status</CardTitle>
                   <CardDescription>
-                    Updating clearance status for {selectedStudent.name} (ID: {selectedStudent.studentId})
+                    Updating clearance status for {selectedStudent.student?.full_name} (ID: {selectedStudent.student?.student_id})
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleUpdateStudent} className="space-y-4">
-                    <div className="space-y-2">
+                  <div className="space-y-4">
+                    <div>
                       <Label htmlFor="status">Clearance Status</Label>
-                      <Select
-                        value={updateForm.status}
-                        onValueChange={(value) => setUpdateForm(prev => ({ ...prev, status: value }))}
-                      >
+                      <Select value={selectedStatus} onValueChange={(value: 'pending' | 'cleared' | 'blocked') => setSelectedStatus(value)}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="cleared">Cleared</SelectItem>
                           <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="outstanding">Outstanding</SelectItem>
+                          <SelectItem value="cleared">Cleared</SelectItem>
+                          <SelectItem value="blocked">Blocked</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="remarks">Remarks</Label>
+                    
+                    <div>
+                      <Label htmlFor="notes">Notes (Optional)</Label>
                       <Textarea
-                        id="remarks"
-                        placeholder="Add any remarks or notes..."
-                        value={updateForm.remarks}
-                        onChange={(e) => setUpdateForm(prev => ({ ...prev, remarks: e.target.value }))}
-                        rows={3}
+                        id="notes"
+                        placeholder="Add any additional notes..."
+                        value={clearanceNotes}
+                        onChange={(e) => setClearanceNotes(e.target.value)}
                       />
                     </div>
-
-                    <div className="flex gap-2">
-                      <Button type="submit">Update Status</Button>
+                    
+                    <div className="flex space-x-3">
                       <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => {
-                          setSelectedStudent(null);
-                          setUpdateForm({ status: "", remarks: "" });
-                        }}
+                        onClick={() => updateStudentStatus(selectedStudent.student?.id, selectedStatus)}
+                        className="flex-1"
+                        disabled={updatingStatus}
+                      >
+                        {updatingStatus ? 'Updating...' : 'Update Status'}
+                      </Button>
+                      <Button 
+                        onClick={() => setSelectedStudent(null)}
+                        variant="outline"
+                        className="flex-1"
+                        disabled={updatingStatus}
                       >
                         Cancel
                       </Button>
                     </div>
-                  </form>
+                  </div>
                 </CardContent>
               </Card>
             ) : (

@@ -1,33 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GraduationCap, Building, Users, FileCheck } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Home = () => {
   const [studentCredentials, setStudentCredentials] = useState({ username: "", password: "" });
   const [departmentCredentials, setDepartmentCredentials] = useState({ username: "", password: "" });
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const { signInAsStudent, signInAsDepartment, userType, loading } = useAuth();
+  const navigate = useNavigate();
 
-  const handleStudentLogin = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && userType) {
+      if (userType === 'student') {
+        navigate('/student');
+      } else if (userType === 'department') {
+        navigate('/department');
+      }
+    }
+  }, [userType, loading, navigate]);
+
+  const handleStudentLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement student authentication with Supabase
-    toast({
-      title: "Login functionality coming soon",
-      description: "Student authentication will be implemented with Supabase",
-    });
+    setIsLoading(true);
+    try {
+      await signInAsStudent(studentCredentials.username, studentCredentials.password);
+      navigate('/student');
+    } catch (error) {
+      // Error is handled in the auth context
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDepartmentLogin = (e: React.FormEvent) => {
+  const handleDepartmentLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement department user authentication with Supabase
-    toast({
-      title: "Login functionality coming soon", 
-      description: "Department user authentication will be implemented with Supabase",
-    });
+    setIsLoading(true);
+    try {
+      await signInAsDepartment(departmentCredentials.username, departmentCredentials.password);
+      navigate('/department');
+    } catch (error) {
+      // Error is handled in the auth context
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -165,8 +187,8 @@ const Home = () => {
                           required
                         />
                       </div>
-                      <Button type="submit" className="w-full">
-                        Login as Student
+                      <Button type="submit" className="w-full" disabled={isLoading || loading}>
+                        {isLoading ? 'Logging in...' : 'Login as Student'}
                       </Button>
                     </form>
                   </CardContent>
@@ -208,8 +230,8 @@ const Home = () => {
                           required
                         />
                       </div>
-                      <Button type="submit" className="w-full">
-                        Login as Department Officer
+                      <Button type="submit" className="w-full" disabled={isLoading || loading}>
+                        {isLoading ? 'Logging in...' : 'Login as Department Officer'}
                       </Button>
                     </form>
                   </CardContent>
