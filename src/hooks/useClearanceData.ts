@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase, ClearanceRecord, DEPARTMENTS } from '@/lib/supabase'
+import { supabase, DEPARTMENTS, isSupabaseConfigured } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 
@@ -18,6 +18,10 @@ export const useClearanceData = () => {
   const { toast } = useToast()
 
   const loadClearanceData = async () => {
+    if (!isSupabaseConfigured) {
+      setLoading(false)
+      return
+    }
     if (!studentProfile && !departmentProfile) return
 
     setLoading(true)

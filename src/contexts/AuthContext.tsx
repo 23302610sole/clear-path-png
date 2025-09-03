@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase, Student, DepartmentUser } from '@/lib/supabase'
+import { supabase, Student, DepartmentUser, isSupabaseConfigured } from '@/lib/supabase'
 import { useToast } from '@/hooks/use-toast'
 
 interface AuthContextType {
@@ -39,6 +39,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { toast } = useToast()
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      // Supabase not configured: stop loading and skip auth setup
+      setLoading(false)
+      return
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -111,6 +117,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signInAsStudent = async (studentId: string, password: string) => {
     setLoading(true)
     try {
+      if (!isSupabaseConfigured) {
+        throw new Error('Supabase is not configured. Connect the Supabase integration to enable login.')
+      }
       // First get the student's email from the database
       const { data: student, error: studentError } = await supabase
         .from('students')
@@ -148,6 +157,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signInAsDepartment = async (username: string, password: string) => {
     setLoading(true)
     try {
+      if (!isSupabaseConfigured) {
+        throw new Error('Supabase is not configured. Connect the Supabase integration to enable login.')
+      }
       // First get the department user's email from the database
       const { data: deptUser, error: deptError } = await supabase
         .from('department_users')
@@ -183,6 +195,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   const signOut = async () => {
+    if (!isSupabaseConfigured) {
+      toast({
+        title: 'Not configured',
+        description: 'Supabase is not configured. Connect the integration to enable sign out.',
+        variant: 'destructive',
+      })
+      return
+    }
     const { error } = await supabase.auth.signOut()
     if (error) {
       toast({
