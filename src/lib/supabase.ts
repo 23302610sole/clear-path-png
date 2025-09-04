@@ -1,28 +1,7 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { supabase as supabaseClient } from '@/integrations/supabase/client'
 
-const envUrl = (import.meta as any).env?.VITE_SUPABASE_URL
-const envKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY
-
-// Support Lovable Supabase integration globals as fallback
-const globalUrl = (globalThis as any).__SUPABASE_URL__ || (globalThis as any).SUPABASE_URL
-const globalKey = (globalThis as any).__SUPABASE_ANON_KEY__ || (globalThis as any).SUPABASE_ANON_KEY
-
-const supabaseUrl = envUrl || globalUrl
-const supabaseAnonKey = envKey || globalKey
-
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
-
-let client: SupabaseClient | null = null
-if (isSupabaseConfigured) {
-  client = createClient(supabaseUrl as string, supabaseAnonKey as string)
-} else {
-  // Do not throw at import-time; show a single warning
-  if (typeof window !== 'undefined') {
-    console.warn('Supabase is not configured. Connect the Supabase integration or provide URL and anon key.')
-  }
-}
-
-export const supabase = client as unknown as SupabaseClient
+export const isSupabaseConfigured = true
+export const supabase = supabaseClient
 
 // Database Types
 export interface Student {
