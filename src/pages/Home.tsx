@@ -9,7 +9,7 @@ import { GraduationCap, Building, Users, FileCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Home = () => {
-  const [studentCredentials, setStudentCredentials] = useState({ username: "", password: "" });
+  const [studentCredentials, setStudentCredentials] = useState({ email: "", password: "" });
   const [departmentCredentials, setDepartmentCredentials] = useState({ username: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   const { signInAsStudent, signInAsDepartment, userType, loading } = useAuth();
@@ -30,7 +30,7 @@ const Home = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await signInAsStudent(studentCredentials.username, studentCredentials.password);
+      await signInAsStudent(studentCredentials.email, studentCredentials.password);
       navigate('/student');
     } catch (error) {
       // Error is handled in the auth context
@@ -157,19 +157,20 @@ const Home = () => {
                   <CardHeader>
                     <CardTitle>Student Portal</CardTitle>
                     <CardDescription>
-                      Log in with your student credentials to check your clearance status
+                      Log in with your student email to check your clearance status
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handleStudentLogin} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="student-username">Student ID</Label>
+                        <Label htmlFor="student-username">Student Email</Label>
                         <Input
                           id="student-username"
-                          placeholder="Enter your student ID"
-                          value={studentCredentials.username}
+                          type="email"
+                          placeholder="Enter your student email"
+                          value={studentCredentials.email}
                           onChange={(e) =>
-                            setStudentCredentials(prev => ({ ...prev, username: e.target.value }))
+                            setStudentCredentials(prev => ({ ...prev, email: e.target.value }))
                           }
                           required
                         />

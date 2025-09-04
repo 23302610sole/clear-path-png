@@ -10,7 +10,7 @@ interface AuthContextType {
   departmentProfile: DepartmentUser | null
   userType: 'student' | 'department' | null
   loading: boolean
-  signInAsStudent: (studentId: string, password: string) => Promise<void>
+  signInAsStudent: (email: string, password: string) => Promise<void>
   signInAsDepartment: (username: string, password: string) => Promise<void>
   signOut: () => Promise<void>
 }
@@ -114,25 +114,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
-  const signInAsStudent = async (studentId: string, password: string) => {
+  const signInAsStudent = async (email: string, password: string) => {
     setLoading(true)
     try {
       if (!isSupabaseConfigured) {
         throw new Error('Supabase is not configured. Connect the Supabase integration to enable login.')
       }
-      // First get the student's email from the database
-      const { data: student, error: studentError } = await supabase
-        .from('students')
-        .select('email')
-        .eq('student_id', studentId)
-        .single()
-
-      if (studentError || !student) {
-        throw new Error('Student not found')
-      }
 
       const { error } = await supabase.auth.signInWithPassword({
-        email: student.email,
+        email,
         password,
       })
 

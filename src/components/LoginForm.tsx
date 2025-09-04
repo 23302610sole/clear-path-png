@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, User, Building } from "lucide-react";
 
 export const LoginForm = () => {
-  const [studentId, setStudentId] = useState("");
+  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -16,11 +16,11 @@ export const LoginForm = () => {
 
   const handleStudentLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!studentId || !password) return;
+    if (!email || !password) return;
     
     setIsLoading(true);
     try {
-      await signInAsStudent(studentId, password);
+      await signInAsStudent(email, password);
     } catch (error) {
       console.error("Login failed:", error);
     } finally {
@@ -66,13 +66,13 @@ export const LoginForm = () => {
           <TabsContent value="student">
             <form onSubmit={handleStudentLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="student-id">Student ID</Label>
+                <Label htmlFor="student-email">Student Email</Label>
                 <Input
-                  id="student-id"
-                  type="text"
-                  placeholder="Enter your student ID"
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
+                  id="student-email"
+                  type="email"
+                  placeholder="Enter your student email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -90,7 +90,7 @@ export const LoginForm = () => {
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isLoading || !studentId || !password}
+                disabled={isLoading || !email || !password}
               >
                 {isLoading ? (
                   <>
