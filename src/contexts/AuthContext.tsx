@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .single()
 
       if (department && !deptError) {
-        setDepartmentProfile(department)
+        setDepartmentProfile(department as DepartmentUser)
         setUserType('department')
         setStudentProfile(null)
       } else {
@@ -132,6 +132,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         title: 'Welcome!',
         description: 'Successfully logged in as student',
       })
+      
+      // Navigation will be handled by the useEffect in the component
     } catch (error: any) {
       toast({
         title: 'Login Failed',
@@ -172,6 +174,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         title: 'Welcome!',
         description: 'Successfully logged in as department officer',
       })
+      
+      // Navigation will be handled by the useEffect in the component
     } catch (error: any) {
       toast({
         title: 'Login Failed',

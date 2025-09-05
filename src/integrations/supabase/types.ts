@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      clearance_records: {
+        Row: {
+          cleared_at: string | null
+          cleared_by: string | null
+          created_at: string
+          department: string
+          id: string
+          notes: string | null
+          status: string
+          student_id: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          cleared_at?: string | null
+          cleared_by?: string | null
+          created_at?: string
+          department: string
+          id?: string
+          notes?: string | null
+          status?: string
+          student_id: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          cleared_at?: string | null
+          cleared_by?: string | null
+          created_at?: string
+          department?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          student_id?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clearance_records_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clearance_records_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "department_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       department_users: {
         Row: {
           created_at: string
