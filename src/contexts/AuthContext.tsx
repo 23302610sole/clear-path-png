@@ -133,6 +133,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         description: 'Successfully logged in as student',
       })
       
+      // Mark last login type to help redirect before profile loads
+      try { localStorage.setItem('lastLoginType', 'student') } catch {}
+      
       // Navigation will be handled by the useEffect in the component
     } catch (error: any) {
       toast({
@@ -175,6 +178,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         description: 'Successfully logged in as department officer',
       })
       
+      try { localStorage.setItem('lastLoginType', 'department') } catch {}
+      
+      // Navigation will be handled by the useEffect in the component
+      
       // Navigation will be handled by the useEffect in the component
     } catch (error: any) {
       toast({
@@ -209,6 +216,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         title: 'Goodbye!',
         description: 'Successfully signed out',
       })
+      try { localStorage.removeItem('lastLoginType') } catch {}
     }
   }
 
