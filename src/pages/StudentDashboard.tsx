@@ -13,6 +13,11 @@ const StudentDashboard = () => {
   const { clearanceData, loading: clearanceLoading, generateClearanceCertificate } = useClearanceData();
   const navigate = useNavigate();
 
+  // SEO: set page title
+  useEffect(() => {
+    document.title = 'Student Clearance Dashboard | Clearance Progress';
+  }, []);
+
   // Redirect if not authenticated as student
   useEffect(() => {
     if (!loading && (!studentProfile || userType !== 'student')) {

@@ -50,10 +50,6 @@ export interface Department {
 // Department constants
 export const DEPARTMENTS = [
   { name: 'Library', code: 'LIB' },
-  { name: 'Computer Science', code: 'CS' },
-  { name: 'Engineering', code: 'ENG' },
-  { name: 'Business', code: 'BUS' },
-  { name: 'Science', code: 'SCI' },
   { name: 'SS&FC', code: 'SSFC' },
   { name: 'Mess', code: 'MESS' },
   { name: 'AV Unit', code: 'AV' },
