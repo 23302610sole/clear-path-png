@@ -77,38 +77,64 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const loadUserProfile = async (user: User) => {
     try {
-      // Try to load as student first
+      console.log('Loading user profile for:', user.email, 'User ID:', user.id)
+      
+      // Try to load as student first - match by email
       const { data: student, error: studentError } = await supabase
         .from('students')
         .select('*')
-        .eq('id', user.id)
-        .single()
+        .eq('email', user.email)
+        .maybeSingle()
+
+      console.log('Student query result:', { student, studentError })
 
       if (student && !studentError) {
-        setStudentProfile(student)
+        // Update the student record with the correct auth user ID
+        await supabase
+          .from('students')
+          .update({ id: user.id })
+          .eq('email', user.email)
+        
+        setStudentProfile({ ...student, id: user.id })
         setUserType('student')
         setDepartmentProfile(null)
         setLoading(false)
+        console.log('Loaded as student:', student.full_name)
         return
       }
 
-      // Try to load as department user
+      // Try to load as department user - match by email
       const { data: department, error: deptError } = await supabase
         .from('department_users')
         .select('*')
-        .eq('id', user.id)
-        .single()
+        .eq('email', user.email)
+        .maybeSingle()
+
+      console.log('Department query result:', { department, deptError })
 
       if (department && !deptError) {
-        setDepartmentProfile(department as DepartmentUser)
+        // Update the department user record with the correct auth user ID
+        await supabase
+          .from('department_users')
+          .update({ id: user.id })
+          .eq('email', user.email)
+          
+        setDepartmentProfile({ ...department, id: user.id } as DepartmentUser)
         setUserType('department')
         setStudentProfile(null)
+        console.log('Loaded as department user:', department.full_name)
       } else {
         // No profile found
+        console.log('No profile found for user:', user.email)
         setUserType(null)
+        setStudentProfile(null)
+        setDepartmentProfile(null)
       }
     } catch (error) {
       console.error('Error loading user profile:', error)
+      setUserType(null)
+      setStudentProfile(null)
+      setDepartmentProfile(null)
     } finally {
       setLoading(false)
     }
