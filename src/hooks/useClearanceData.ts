@@ -19,96 +19,120 @@ export const useClearanceData = () => {
   const { toast } = useToast()
 
   const loadClearanceData = async () => {
+    console.log('Loading clearance data...', { userType, studentProfile: !!studentProfile, departmentProfile: !!departmentProfile })
+    
     if (!isSupabaseConfigured) {
+      console.log('Supabase not configured')
       setLoading(false)
       return
     }
-    if (!studentProfile && !departmentProfile) return
+    
+    if (!studentProfile && !departmentProfile) {
+      console.log('No profiles available, stopping data load')
+      setLoading(false)
+      return
+    }
 
     setLoading(true)
     try {
-      // Use raw SQL query since the table types aren't generated yet
       if (userType === 'student' && studentProfile) {
-        // Try to query clearance records directly 
-        const { data, error } = await supabase
-          .from('clearance_records' as any)
-          .select('*')
-          .eq('student_id', studentProfile.id)
+        console.log('Loading student clearance data for:', studentProfile.full_name)
         
-        if (error) {
-          console.log('No clearance records found, creating default data')
-        }
-
         // For students, create a status for each department
         const allDepartments = [
           ...DEPARTMENTS,
           { name: studentProfile.department, code: studentProfile.department.substring(0, 3).toUpperCase() }
         ]
-        // Process data if successful, otherwise use defaults
+        
+        // Try to query clearance records
+        const { data, error } = await supabase
+          .from('clearance_records' as any)
+          .select('*')
+          .eq('student_id', studentProfile.id)
+        
+        console.log('Clearance records query result:', { data, error })
+
+        let clearanceStatuses: ClearanceStatus[] = []
+        
         if (data && !error && Array.isArray(data)) {
-          const clearanceStatuses: ClearanceStatus[] = allDepartments.map(dept => {
-            let record: any = null
-            if (data && data.length > 0) {
-              record = data.find((r: any) => r && typeof r === 'object' && r.department === dept.name)
-            }
-            
+          // Process existing records
+          clearanceStatuses = allDepartments.map(dept => {
+            const record = data.find((r: any) => r && typeof r === 'object' && r.department === dept.name) as any
             return {
               department: dept.name,
-              status: (record ? record.status : 'pending') as 'pending' | 'cleared' | 'blocked',
-              notes: record ? record.notes : undefined,
-              cleared_at: record ? record.cleared_at : undefined,
-              cleared_by: record ? record.cleared_by : undefined
+              status: (record?.status || 'pending') as 'pending' | 'cleared' | 'blocked',
+              notes: record?.notes || undefined,
+              cleared_at: record?.cleared_at || undefined,
+              cleared_by: record?.cleared_by || undefined
             }
           })
-          setClearanceData(clearanceStatuses)
         } else {
-          // Use default data if query fails
-          const defaultStatuses: ClearanceStatus[] = allDepartments.map(dept => ({
+          // Use default data if query fails or returns no data
+          clearanceStatuses = allDepartments.map(dept => ({
             department: dept.name,
             status: 'pending' as const,
-            notes: undefined,
+            notes: dept.name === 'Library' ? 'Please return any borrowed books' : undefined,
             cleared_at: undefined,
             cleared_by: undefined
           }))
-          setClearanceData(defaultStatuses)
         }
+        
+        console.log('Setting student clearance data:', clearanceStatuses)
+        setClearanceData(clearanceStatuses)
+        
       } else if (userType === 'department' && departmentProfile) {
-        // For department users, simplify the query for now
-        const { data, error } = await supabase
+        console.log('Loading department clearance data for:', departmentProfile.department)
+        
+        // For department users, load all students with clearance records for their department
+        const { data: records, error: recordsError } = await supabase
           .from('clearance_records' as any)
           .select('*')
           .eq('department', departmentProfile.department)
 
-        // If successful, process the data
-        if (data && !error && Array.isArray(data)) {
-          const clearanceStatuses: ClearanceStatus[] = data.map((record: any) => {
-            if (record && typeof record === 'object') {
-              return {
-                department: record.department,
-                status: record.status,
-                notes: record.notes,
-                cleared_at: record.cleared_at,
-                cleared_by: record.cleared_by,
-                student: null // We'll load student data separately if needed
-              }
-            }
+        console.log('Department records query result:', { records, recordsError })
+
+        // Also get all students to show even those without records
+        const { data: students, error: studentsError } = await supabase
+          .from('students')
+          .select('*')
+
+        console.log('Students query result:', { students, studentsError })
+
+        let clearanceStatuses: ClearanceStatus[] = []
+        
+        if (students && !studentsError) {
+          clearanceStatuses = students.map((student: any) => {
+            const record = records && Array.isArray(records) ? records.find((r: any) => r && r.student_id === student.id) as any : null
             return {
               department: departmentProfile.department,
-              status: 'pending' as const,
-              notes: undefined,
-              cleared_at: undefined,
-              cleared_by: undefined,
-              student: null
+              status: (record?.status || 'pending') as 'pending' | 'cleared' | 'blocked',
+              notes: record?.notes || undefined,
+              cleared_at: record?.cleared_at || undefined,
+              cleared_by: record?.cleared_by || undefined,
+              student: student
             }
           })
-          setClearanceData(clearanceStatuses)
         } else {
-          setClearanceData([])
+          // Fallback: create some mock data for testing
+          clearanceStatuses = [
+            {
+              department: departmentProfile.department,
+              status: 'pending' as const,
+              notes: 'No students found in database',
+              cleared_at: undefined,
+              cleared_by: undefined,
+              student: { id: 'mock', full_name: 'Test Student', student_id: 'TEST001', department: 'Computer Science' }
+            }
+          ]
         }
+        
+        console.log('Setting department clearance data:', clearanceStatuses)
+        setClearanceData(clearanceStatuses)
       }
     } catch (error: any) {
       console.error('Error loading clearance data:', error)
-      // For now, create default data if query fails
+      
+      // Create fallback data based on user type
       if (userType === 'student' && studentProfile) {
         const allDepartments = [
           ...DEPARTMENTS,
@@ -118,14 +142,17 @@ export const useClearanceData = () => {
         const defaultStatuses: ClearanceStatus[] = allDepartments.map(dept => ({
           department: dept.name,
           status: 'pending' as const,
-          notes: undefined,
+          notes: dept.name === 'Library' ? 'Please return any borrowed books' : undefined,
           cleared_at: undefined,
           cleared_by: undefined
         }))
         setClearanceData(defaultStatuses)
+      } else {
+        setClearanceData([])
       }
     } finally {
       setLoading(false)
+      console.log('Clearance data loading completed')
     }
   }
 
