@@ -87,6 +87,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .maybeSingle()
 
       console.log('Student query result:', { student, studentError })
+      
+      if (studentError) {
+        console.error('Student query error:', studentError)
+      }
 
       if (student && !studentError) {
         // Update the student record with the correct auth user ID
