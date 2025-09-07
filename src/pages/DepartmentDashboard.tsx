@@ -53,7 +53,24 @@ const DepartmentDashboard = () => {
   }
 
   if (!departmentProfile) {
-    return null;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle>Department profile not found</CardTitle>
+            <CardDescription>
+              We couldn't load your department profile. Please try again or sign out.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate('/')}>Go Home</Button>
+              <Button onClick={async () => { await signOut(); navigate('/'); }}>Sign out</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const filteredStudents = clearanceData.filter((record: any) =>

@@ -37,7 +37,24 @@ const StudentDashboard = () => {
   }
 
   if (!studentProfile) {
-    return null;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle>Profile not found</CardTitle>
+            <CardDescription>
+              We couldn't load your student profile. Please try again or sign out.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate('/')}>Go Home</Button>
+              <Button onClick={async () => { await signOut(); navigate('/'); }}>Sign out</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const clearedCount = clearanceData.filter(item => item.status === "cleared").length;

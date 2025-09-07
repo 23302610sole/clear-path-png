@@ -36,6 +36,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [departmentProfile, setDepartmentProfile] = useState<DepartmentUser | null>(null)
   const [userType, setUserType] = useState<'student' | 'department' | null>(null)
   const [loading, setLoading] = useState(true)
+  const [retryAttempted, setRetryAttempted] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -74,6 +75,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     return () => subscription.unsubscribe()
   }, [])
+
+  // Retry profile load once if the session exists but no profile was found (e.g., after policy changes)
+  useEffect(() => {
+    if (!retryAttempted && !loading && user && !userType) {
+      setRetryAttempted(true)
+      console.log('Retrying profile load as fallback...')
+      loadUserProfile(user)
+    }
+  }, [user, userType, loading, retryAttempted])
 
   const loadUserProfile = async (user: User) => {
     try {
