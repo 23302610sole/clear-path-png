@@ -247,6 +247,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         description: 'Successfully signed out',
       })
       try { localStorage.removeItem('lastLoginType') } catch {}
+      // Redirect to home page
+      window.location.href = '/'
     }
   }
 
