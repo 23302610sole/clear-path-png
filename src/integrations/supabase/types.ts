@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          password: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          password: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          password?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       clearance_records: {
         Row: {
           cleared_at: string | null
@@ -78,7 +105,6 @@ export type Database = {
           password: string
           role: string
           updated_at: string
-          username: string
         }
         Insert: {
           created_at?: string
@@ -89,7 +115,6 @@ export type Database = {
           password: string
           role: string
           updated_at?: string
-          username: string
         }
         Update: {
           created_at?: string
@@ -100,7 +125,6 @@ export type Database = {
           password?: string
           role?: string
           updated_at?: string
-          username?: string
         }
         Relationships: []
       }

@@ -17,11 +17,18 @@ export interface Student {
 
 export interface DepartmentUser {
   id: string
-  username: string
   full_name: string
   email: string
   department: string
-  role: 'department_officer' | 'accounts'
+  role: string
+  created_at: string
+  updated_at: string
+}
+
+export interface AdminUser {
+  id: string
+  email: string
+  full_name: string
   created_at: string
   updated_at: string
 }

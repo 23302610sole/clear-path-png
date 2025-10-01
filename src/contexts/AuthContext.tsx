@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase, Student, DepartmentUser, isSupabaseConfigured } from '@/lib/supabase'
+import { supabase, Student, DepartmentUser, AdminUser, isSupabaseConfigured } from '@/lib/supabase'
 import { useToast } from '@/hooks/use-toast'
 
 interface AuthContextType {
@@ -8,10 +8,12 @@ interface AuthContextType {
   session: Session | null
   studentProfile: Student | null
   departmentProfile: DepartmentUser | null
-  userType: 'student' | 'department' | null
+  adminProfile: AdminUser | null
+  userType: 'student' | 'department' | 'admin' | null
   loading: boolean
   signInAsStudent: (email: string, password: string) => Promise<void>
-  signInAsDepartment: (username: string, password: string) => Promise<void>
+  signInAsDepartment: (email: string, password: string, departmentCode?: string) => Promise<void>
+  signInAsAdmin: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -34,19 +36,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null)
   const [studentProfile, setStudentProfile] = useState<Student | null>(null)
   const [departmentProfile, setDepartmentProfile] = useState<DepartmentUser | null>(null)
-  const [userType, setUserType] = useState<'student' | 'department' | null>(null)
+  const [adminProfile, setAdminProfile] = useState<AdminUser | null>(null)
+  const [userType, setUserType] = useState<'student' | 'department' | 'admin' | null>(null)
   const [loading, setLoading] = useState(true)
   const [retryAttempted, setRetryAttempted] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
-      // Supabase not configured: stop loading and skip auth setup
       setLoading(false)
       return
     }
 
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
@@ -57,7 +58,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     })
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -68,6 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         setStudentProfile(null)
         setDepartmentProfile(null)
+        setAdminProfile(null)
         setUserType(null)
         setLoading(false)
       }
@@ -76,7 +77,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Retry profile load once if the session exists but no profile was found (e.g., after policy changes)
   useEffect(() => {
     if (!retryAttempted && !loading && user && !userType) {
       setRetryAttempted(true)
@@ -89,21 +89,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('Loading user profile for:', user.email, 'User ID:', user.id)
       
-      // Try to load as student first - match by email
+      // Try admin first
+      const { data: admin, error: adminError } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('email', user.email)
+        .maybeSingle()
+
+      if (admin && !adminError) {
+        await supabase
+          .from('admin_users')
+          .update({ id: user.id })
+          .eq('email', user.email)
+        
+        setAdminProfile({ ...admin, id: user.id })
+        setUserType('admin')
+        setStudentProfile(null)
+        setDepartmentProfile(null)
+        setLoading(false)
+        console.log('Loaded as admin:', admin.full_name)
+        return
+      }
+      
+      // Try student
       const { data: student, error: studentError } = await supabase
         .from('students')
         .select('*')
         .eq('email', user.email)
         .maybeSingle()
-
-      console.log('Student query result:', { student, studentError })
       
-      if (studentError) {
-        console.error('Student query error:', studentError)
-      }
-
       if (student && !studentError) {
-        // Update the student record with the correct auth user ID
         await supabase
           .from('students')
           .update({ id: user.id })
@@ -112,43 +127,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setStudentProfile({ ...student, id: user.id })
         setUserType('student')
         setDepartmentProfile(null)
+        setAdminProfile(null)
         setLoading(false)
         console.log('Loaded as student:', student.full_name)
         return
       }
 
-      // Try to load as department user - match by email
+      // Try department
       const { data: department, error: deptError } = await supabase
         .from('department_users')
         .select('*')
         .eq('email', user.email)
         .maybeSingle()
 
-      console.log('Department query result:', { department, deptError })
-
       if (department && !deptError) {
-        // Update the department user record with the correct auth user ID
         await supabase
           .from('department_users')
           .update({ id: user.id })
           .eq('email', user.email)
           
-        setDepartmentProfile({ ...department, id: user.id } as DepartmentUser)
+        setDepartmentProfile({ ...department, id: user.id })
         setUserType('department')
         setStudentProfile(null)
+        setAdminProfile(null)
+        setLoading(false)
         console.log('Loaded as department user:', department.full_name)
-      } else {
-        // No profile found
-        console.log('No profile found for user:', user.email)
-        setUserType(null)
-        setStudentProfile(null)
-        setDepartmentProfile(null)
+        return
       }
+
+      console.log('No profile found for user:', user.email)
+      setUserType(null)
+      setStudentProfile(null)
+      setDepartmentProfile(null)
+      setAdminProfile(null)
     } catch (error) {
       console.error('Error loading user profile:', error)
       setUserType(null)
       setStudentProfile(null)
       setDepartmentProfile(null)
+      setAdminProfile(null)
     } finally {
       setLoading(false)
     }
@@ -173,10 +190,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         description: 'Successfully logged in as student',
       })
       
-      // Mark last login type to help redirect before profile loads
       try { localStorage.setItem('lastLoginType', 'student') } catch {}
-      
-      // Navigation will be handled by the useEffect in the component
     } catch (error: any) {
       toast({
         title: 'Login Failed',
@@ -189,21 +203,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
-  const signInAsDepartment = async (username: string, password: string) => {
+  const signInAsDepartment = async (email: string, password: string, departmentCode?: string) => {
     setLoading(true)
     try {
       if (!isSupabaseConfigured) {
         throw new Error('Supabase is not configured. Connect the Supabase integration to enable login.')
       }
-      // First get the department user's email from the database
-      const { data: deptUser, error: deptError } = await supabase
+
+      // Verify the user exists in department_users table
+      let query = supabase
         .from('department_users')
-        .select('email')
-        .eq('username', username)
-        .single()
+        .select('email, password, department')
+        .eq('email', email)
+      
+      // If departmentCode is provided, verify they belong to that department
+      if (departmentCode) {
+        const { data: dept } = await supabase
+          .from('departments')
+          .select('name')
+          .eq('code', departmentCode)
+          .maybeSingle()
+        
+        if (dept) {
+          query = query.eq('department', dept.name)
+        }
+      }
+      
+      const { data: deptUser, error: deptError } = await query.maybeSingle()
 
       if (deptError || !deptUser) {
-        throw new Error('Department user not found')
+        throw new Error(departmentCode 
+          ? "You don't have access to this department or invalid credentials"
+          : "Invalid email or password")
+      }
+
+      // Verify password matches
+      if (deptUser.password !== password) {
+        throw new Error("Invalid email or password")
       }
 
       const { error } = await supabase.auth.signInWithPassword({
@@ -219,10 +255,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       })
       
       try { localStorage.setItem('lastLoginType', 'department') } catch {}
+    } catch (error: any) {
+      toast({
+        title: 'Login Failed',
+        description: error.message || 'Failed to login',
+        variant: 'destructive',
+      })
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const signInAsAdmin = async (email: string, password: string) => {
+    setLoading(true)
+    try {
+      if (!isSupabaseConfigured) {
+        throw new Error('Supabase is not configured. Connect the Supabase integration to enable login.')
+      }
+
+      // Verify the user exists in admin_users table
+      const { data: adminUser, error: adminError } = await supabase
+        .from('admin_users')
+        .select('email, password')
+        .eq('email', email)
+        .maybeSingle()
+
+      if (adminError || !adminUser) {
+        throw new Error("Invalid admin credentials")
+      }
+
+      // Verify password matches
+      if (adminUser.password !== password) {
+        throw new Error("Invalid email or password")
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: adminUser.email,
+        password,
+      })
+
+      if (error) throw error
+
+      toast({
+        title: 'Welcome Admin!',
+        description: 'Successfully logged in',
+      })
       
-      // Navigation will be handled by the useEffect in the component
-      
-      // Navigation will be handled by the useEffect in the component
+      try { localStorage.setItem('lastLoginType', 'admin') } catch {}
     } catch (error: any) {
       toast({
         title: 'Login Failed',
@@ -265,10 +345,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     session,
     studentProfile,
     departmentProfile,
+    adminProfile,
     userType,
     loading,
     signInAsStudent,
     signInAsDepartment,
+    signInAsAdmin,
     signOut,
   }
 

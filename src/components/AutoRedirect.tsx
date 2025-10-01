@@ -7,19 +7,19 @@ export const AutoRedirect = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Redirect as soon as we have a session.
-    // Prefer explicit userType; fall back to lastLoginType set during sign-in.
     if (!loading && user) {
       const lastLoginType = (() => {
         try { return localStorage.getItem('lastLoginType') } catch { return null }
       })()
 
-      const type = userType || (lastLoginType as 'student' | 'department' | null)
+      const type = userType || (lastLoginType as 'student' | 'department' | 'admin' | null)
 
       if (type === 'student') {
         navigate('/student', { replace: true })
       } else if (type === 'department') {
         navigate('/department', { replace: true })
+      } else if (type === 'admin') {
+        navigate('/admin', { replace: true })
       }
     }
   }, [user, userType, loading, navigate])

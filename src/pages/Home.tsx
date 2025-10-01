@@ -5,23 +5,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GraduationCap, Building, Users, FileCheck } from "lucide-react";
+import { GraduationCap, Building, Users, FileCheck, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Home = () => {
   const [studentCredentials, setStudentCredentials] = useState({ email: "", password: "" });
-  const [departmentCredentials, setDepartmentCredentials] = useState({ username: "", password: "" });
+  const [adminCredentials, setAdminCredentials] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const { signInAsStudent, signInAsDepartment, userType, loading } = useAuth();
+  const { signInAsStudent, signInAsAdmin, userType, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (!loading && userType) {
       if (userType === 'student') {
         navigate('/student');
       } else if (userType === 'department') {
         navigate('/department');
+      } else if (userType === 'admin') {
+        navigate('/admin');
       }
     }
   }, [userType, loading, navigate]);
@@ -39,12 +40,12 @@ const Home = () => {
     }
   };
 
-  const handleDepartmentLogin = async (e: React.FormEvent) => {
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await signInAsDepartment(departmentCredentials.username, departmentCredentials.password);
-      navigate('/department');
+      await signInAsAdmin(adminCredentials.email, adminCredentials.password);
+      navigate('/admin');
     } catch (error) {
       // Error is handled in the auth context
     } finally {
@@ -147,15 +148,19 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto">
             <Tabs defaultValue="student" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="student">Student Login</TabsTrigger>
-                <TabsTrigger value="department">Department Login</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="student">Student</TabsTrigger>
+                <TabsTrigger value="department">Department</TabsTrigger>
+                <TabsTrigger value="admin">Admin</TabsTrigger>
               </TabsList>
 
               <TabsContent value="student">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Student Portal</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <GraduationCap className="w-5 h-5" />
+                      Student Portal
+                    </CardTitle>
                     <CardDescription>
                       Log in with your student email to check your clearance status
                     </CardDescription>
@@ -163,9 +168,9 @@ const Home = () => {
                   <CardContent>
                     <form onSubmit={handleStudentLogin} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="student-username">Student Email</Label>
+                        <Label htmlFor="student-email">Student Email</Label>
                         <Input
-                          id="student-username"
+                          id="student-email"
                           type="email"
                           placeholder="Enter your student email"
                           value={studentCredentials.email}
@@ -199,40 +204,70 @@ const Home = () => {
               <TabsContent value="department">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Department Portal</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <Building className="w-5 h-5" />
+                      Department Portal
+                    </CardTitle>
                     <CardDescription>
-                      Log in to manage student clearance records for your department
+                      Access the department selection portal
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <form onSubmit={handleDepartmentLogin} className="space-y-4">
+                    <p className="text-muted-foreground mb-4">
+                      Click below to select your department and login with your staff credentials.
+                    </p>
+                    <Button 
+                      className="w-full" 
+                      onClick={() => navigate('/department-portal')}
+                      disabled={loading}
+                    >
+                      Go to Department Portal
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="admin">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="w-5 h-5" />
+                      Admin Portal
+                    </CardTitle>
+                    <CardDescription>
+                      Administrative access to oversee the entire system
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleAdminLogin} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="dept-username">Username</Label>
+                        <Label htmlFor="admin-email">Admin Email</Label>
                         <Input
-                          id="dept-username"
-                          placeholder="Enter your username"
-                          value={departmentCredentials.username}
+                          id="admin-email"
+                          type="email"
+                          placeholder="Enter your admin email"
+                          value={adminCredentials.email}
                           onChange={(e) =>
-                            setDepartmentCredentials(prev => ({ ...prev, username: e.target.value }))
+                            setAdminCredentials(prev => ({ ...prev, email: e.target.value }))
                           }
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="dept-password">Password</Label>
+                        <Label htmlFor="admin-password">Password</Label>
                         <Input
-                          id="dept-password"
+                          id="admin-password"
                           type="password"
                           placeholder="Enter your password"
-                          value={departmentCredentials.password}
+                          value={adminCredentials.password}
                           onChange={(e) =>
-                            setDepartmentCredentials(prev => ({ ...prev, password: e.target.value }))
+                            setAdminCredentials(prev => ({ ...prev, password: e.target.value }))
                           }
                           required
                         />
                       </div>
                       <Button type="submit" className="w-full" disabled={isLoading || loading}>
-                        {isLoading ? 'Logging in...' : 'Login as Department Officer'}
+                        {isLoading ? 'Logging in...' : 'Login as Admin'}
                       </Button>
                     </form>
                   </CardContent>
