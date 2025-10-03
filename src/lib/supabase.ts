@@ -11,6 +11,7 @@ export interface Student {
   email: string
   department: string
   phone?: string
+  auth_migrated: boolean
   created_at: string
   updated_at: string
 }
@@ -21,6 +22,7 @@ export interface DepartmentUser {
   email: string
   department: string
   role: string
+  auth_migrated: boolean
   created_at: string
   updated_at: string
 }
@@ -29,6 +31,7 @@ export interface AdminUser {
   id: string
   email: string
   full_name: string
+  auth_migrated: boolean
   created_at: string
   updated_at: string
 }

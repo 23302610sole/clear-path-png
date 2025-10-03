@@ -210,10 +210,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error('Supabase is not configured. Connect the Supabase integration to enable login.')
       }
 
-      // Verify the user exists in department_users table
+      // Sign in with Supabase Auth
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) throw error
+
+      // Verify the user exists in department_users table and has correct department access
       let query = supabase
         .from('department_users')
-        .select('email, password, department')
+        .select('email, department')
         .eq('email', email)
       
       // If departmentCode is provided, verify they belong to that department
@@ -232,20 +240,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { data: deptUser, error: deptError } = await query.maybeSingle()
 
       if (deptError || !deptUser) {
+        await supabase.auth.signOut()
         throw new Error(departmentCode 
-          ? "You don't have access to this department or invalid credentials"
-          : "Invalid email or password")
+          ? "You don't have access to this department"
+          : "No department profile found for this account")
       }
-
-      // Verify password matches
-      if (deptUser.password !== password) {
-        throw new Error("Invalid email or password")
-      }
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: deptUser.email,
-        password,
-      })
 
       if (error) throw error
 
@@ -274,26 +273,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error('Supabase is not configured. Connect the Supabase integration to enable login.')
       }
 
+      // Sign in with Supabase Auth
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) throw error
+
       // Verify the user exists in admin_users table
       const { data: adminUser, error: adminError } = await supabase
         .from('admin_users')
-        .select('email, password')
+        .select('email')
         .eq('email', email)
         .maybeSingle()
 
       if (adminError || !adminUser) {
-        throw new Error("Invalid admin credentials")
+        await supabase.auth.signOut()
+        throw new Error("No admin profile found for this account")
       }
-
-      // Verify password matches
-      if (adminUser.password !== password) {
-        throw new Error("Invalid email or password")
-      }
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: adminUser.email,
-        password,
-      })
 
       if (error) throw error
 
