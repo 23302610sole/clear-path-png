@@ -122,34 +122,36 @@ const StudentDashboard = () => {
           </div>
           
           {/* Profile Card - Clickable */}
-          <Card 
-            className="bg-background/95 backdrop-blur cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary/50"
+          <div 
+            className="cursor-pointer"
             onClick={() => navigate('/student/profile')}
           >
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="w-20 h-20 border-4 border-primary/20">
-                    <AvatarImage src="" />
-                    <AvatarFallback className="text-2xl bg-primary/10 text-primary">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h1 className="text-2xl font-bold text-foreground">{studentProfile.full_name}</h1>
-                    <p className="text-muted-foreground font-medium">ID: {studentProfile.student_id}</p>
-                    <p className="text-muted-foreground">{studentProfile.department} Department</p>
-                    <p className="text-sm text-muted-foreground">{studentProfile.email}</p>
+            <Card className="bg-background/95 backdrop-blur hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary/50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="w-20 h-20 border-4 border-primary/20">
+                      <AvatarImage src="" />
+                      <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h1 className="text-2xl font-bold text-foreground">{studentProfile.full_name}</h1>
+                      <p className="text-muted-foreground font-medium">ID: {studentProfile.student_id}</p>
+                      <p className="text-muted-foreground">{studentProfile.department} Department</p>
+                      <p className="text-sm text-muted-foreground">{studentProfile.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Edit className="w-5 h-5" />
+                    <span className="text-sm font-medium">Edit Profile</span>
+                    <ChevronRight className="w-5 h-5" />
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Edit className="w-5 h-5" />
-                  <span className="text-sm font-medium">Edit Profile</span>
-                  <ChevronRight className="w-5 h-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </header>
 
@@ -189,44 +191,46 @@ const StudentDashboard = () => {
         {/* Department Status Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {clearanceData.map((item, index) => (
-            <Card 
-              key={index} 
-              className="relative cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.03] border-2 hover:border-primary/50 group"
+            <div
+              key={index}
+              className="cursor-pointer"
               onClick={() => navigate(`/student/department/${encodeURIComponent(item.department)}`)}
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    {getStatusIcon(item.status)}
-                    <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                      {item.department}
-                    </CardTitle>
+              <Card className="relative hover:shadow-xl transition-all duration-300 hover:scale-[1.03] border-2 hover:border-primary/50 group h-full">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      {getStatusIcon(item.status)}
+                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                        {item.department}
+                      </CardTitle>
+                    </div>
+                    {getStatusBadge(item.status)}
                   </div>
-                  {getStatusBadge(item.status)}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {item.notes && (
-                  <div className="mb-3 p-3 bg-muted/70 rounded-md border border-border/50">
-                    <p className="text-sm font-medium">Notes:</p>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{item.notes}</p>
+                </CardHeader>
+                <CardContent>
+                  {item.notes && (
+                    <div className="mb-3 p-3 bg-muted/70 rounded-md border border-border/50">
+                      <p className="text-sm font-medium">Notes:</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{item.notes}</p>
+                    </div>
+                  )}
+                  {item.status === "cleared" && item.cleared_at && (
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Cleared: {new Date(item.cleared_at).toLocaleDateString()}
+                    </p>
+                  )}
+                  {item.cleared_by && (
+                    <p className="text-sm text-muted-foreground mb-3">
+                      By: {item.cleared_by}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-end text-sm text-primary font-medium mt-4 pt-3 border-t group-hover:translate-x-1 transition-transform">
+                    View Details <ChevronRight className="w-4 h-4 ml-1" />
                   </div>
-                )}
-                {item.status === "cleared" && item.cleared_at && (
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Cleared: {new Date(item.cleared_at).toLocaleDateString()}
-                  </p>
-                )}
-                {item.cleared_by && (
-                  <p className="text-sm text-muted-foreground mb-3">
-                    By: {item.cleared_by}
-                  </p>
-                )}
-                <div className="flex items-center justify-end text-sm text-primary font-medium mt-4 pt-3 border-t group-hover:translate-x-1 transition-transform">
-                  View Details <ChevronRight className="w-4 h-4 ml-1" />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           ))}
         </div>
 
