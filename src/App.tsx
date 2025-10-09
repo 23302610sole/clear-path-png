@@ -7,6 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AutoRedirect } from "@/components/AutoRedirect";
 import Home from "./pages/Home";
 import StudentDashboard from "./pages/StudentDashboard";
+import StudentProfile from "./pages/StudentProfile";
+import DepartmentDetail from "./pages/DepartmentDetail";
 import DepartmentDashboard from "./pages/DepartmentDashboard";
 import DepartmentPortal from "./pages/DepartmentPortal";
 import DepartmentLogin from "./pages/DepartmentLogin";
@@ -26,6 +28,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/student" element={<StudentDashboard />} />
+            <Route path="/student/profile" element={<StudentProfile />} />
+            <Route path="/student/department/:department" element={<DepartmentDetail />} />
             <Route path="/department-portal" element={<DepartmentPortal />} />
             <Route path="/department-login/:departmentCode" element={<DepartmentLogin />} />
             <Route path="/department" element={<DepartmentDashboard />} />

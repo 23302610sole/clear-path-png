@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, Clock, Download, LogOut, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CheckCircle, XCircle, Clock, Download, LogOut, Edit, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClearanceData } from "@/hooks/useClearanceData";
 
@@ -97,119 +98,168 @@ const StudentDashboard = () => {
     navigate('/');
   };
 
+  const initials = studentProfile.full_name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
-      <header className="bg-primary text-primary-foreground p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <div className="bg-primary-foreground/10 p-3 rounded-full">
-              <User className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-primary-foreground">{studentProfile.full_name}</h1>
-              <p className="text-primary-foreground/80">ID: {studentProfile.student_id}</p>
-              <p className="text-primary-foreground/80">{studentProfile.department} Department</p>
-              <p className="text-primary-foreground/80">{studentProfile.email}</p>
-            </div>
+      <header className="bg-gradient-to-r from-primary via-primary/95 to-primary/90 text-primary-foreground shadow-lg">
+        <div className="container mx-auto p-6">
+          <div className="flex justify-between items-start mb-4">
+            <h2 className="text-sm font-medium opacity-80">Student Dashboard</h2>
+            <Button 
+              variant="secondary" 
+              onClick={handleLogout}
+              size="sm"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
           </div>
-          <Button 
-            variant="secondary" 
-            onClick={handleLogout}
+          
+          {/* Profile Card - Clickable */}
+          <Card 
+            className="bg-background/95 backdrop-blur cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary/50"
+            onClick={() => navigate('/student/profile')}
           >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Avatar className="w-20 h-20 border-4 border-primary/20">
+                    <AvatarImage src="" />
+                    <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h1 className="text-2xl font-bold text-foreground">{studentProfile.full_name}</h1>
+                    <p className="text-muted-foreground font-medium">ID: {studentProfile.student_id}</p>
+                    <p className="text-muted-foreground">{studentProfile.department} Department</p>
+                    <p className="text-sm text-muted-foreground">{studentProfile.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Edit className="w-5 h-5" />
+                  <span className="text-sm font-medium">Edit Profile</span>
+                  <ChevronRight className="w-5 h-5" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </header>
 
       <div className="container mx-auto p-6">
         {/* Progress Overview */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+        <Card className="mb-8 shadow-lg border-2 hover:shadow-xl transition-shadow">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
+            <CardTitle className="flex items-center justify-between text-2xl">
               <span>Clearance Progress</span>
-              <span className="text-2xl font-bold">{clearedCount}/{totalCount}</span>
+              <span className="text-3xl font-bold text-primary">{clearedCount}/{totalCount}</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-base">
               Track your clearance status across all university departments
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Progress value={progressPercentage} className="w-full" />
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>{clearedCount} departments cleared</span>
-                <span>{progressPercentage.toFixed(0)}% complete</span>
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <Progress value={progressPercentage} className="w-full h-3" />
+                <div className="flex justify-between text-sm font-medium">
+                  <span className="text-muted-foreground">{clearedCount} departments cleared</span>
+                  <span className="text-primary">{progressPercentage.toFixed(0)}% complete</span>
+                </div>
               </div>
               <Button
                 onClick={handleDownloadCertificate}
-                className="w-full"
+                className="w-full h-12 text-base font-semibold shadow-md hover:shadow-lg transition-all"
                 disabled={!isFullyCleared}
               >
-                <Download className="w-4 h-4 mr-2" />
-                {isFullyCleared ? 'Download Certificate' : 'Complete All Clearances First'}
+                <Download className="w-5 h-5 mr-2" />
+                {isFullyCleared ? 'Download Clearance Certificate' : 'Complete All Clearances First'}
               </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* Department Status Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {clearanceData.map((item, index) => (
-            <Card key={index} className="relative">
+            <Card 
+              key={index} 
+              className="relative cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-[1.03] border-2 hover:border-primary/50 group"
+              onClick={() => navigate(`/student/department/${encodeURIComponent(item.department)}`)}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-3">
                     {getStatusIcon(item.status)}
-                    <CardTitle className="text-lg">{item.department}</CardTitle>
+                    <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                      {item.department}
+                    </CardTitle>
                   </div>
                   {getStatusBadge(item.status)}
                 </div>
               </CardHeader>
               <CardContent>
                 {item.notes && (
-                  <div className="mb-3 p-3 bg-muted rounded-md">
+                  <div className="mb-3 p-3 bg-muted/70 rounded-md border border-border/50">
                     <p className="text-sm font-medium">Notes:</p>
-                    <p className="text-sm text-muted-foreground">{item.notes}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{item.notes}</p>
                   </div>
                 )}
                 {item.status === "cleared" && item.cleared_at && (
-                  <p className="text-sm text-muted-foreground">
-                    Cleared on: {new Date(item.cleared_at).toLocaleDateString()}
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Cleared: {new Date(item.cleared_at).toLocaleDateString()}
                   </p>
                 )}
                 {item.cleared_by && (
-                  <p className="text-sm text-muted-foreground">
-                    Cleared by: {item.cleared_by}
+                  <p className="text-sm text-muted-foreground mb-3">
+                    By: {item.cleared_by}
                   </p>
                 )}
+                <div className="flex items-center justify-end text-sm text-primary font-medium mt-4 pt-3 border-t group-hover:translate-x-1 transition-transform">
+                  View Details <ChevronRight className="w-4 h-4 ml-1" />
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Instructions */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Next Steps</CardTitle>
+        <Card className="shadow-lg border-2">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
+            <CardTitle className="text-xl">Next Steps</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
+          <CardContent className="pt-6">
+            <div className="space-y-3">
               {clearanceData.filter(d => d.status === "blocked").length > 0 && (
-                <p className="text-destructive font-medium">
-                  • You have blocked clearances that need to be resolved manually with the respective departments.
-                </p>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-destructive/10 border-l-4 border-destructive">
+                  <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <p className="text-destructive font-medium">
+                    You have blocked clearances. Click on the department card to view details and submit queries.
+                  </p>
+                </div>
               )}
               {clearanceData.filter(d => d.status === "pending").length > 0 && (
-                <p className="text-warning font-medium">
-                  • Some departments are still processing your clearance. Please wait for updates.
-                </p>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-warning/10 border-l-4 border-warning">
+                  <Clock className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+                  <p className="text-warning-foreground font-medium">
+                    Some departments are processing your clearance. Check individual departments for requirements.
+                  </p>
+                </div>
               )}
               {isFullyCleared && (
-                <p className="text-success font-medium">
-                  • Congratulations! All departments have cleared you. You can now download your final clearance certificate.
-                </p>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-success/10 border-l-4 border-success">
+                  <CheckCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                  <p className="text-success-foreground font-medium">
+                    Congratulations! All departments have cleared you. Download your certificate above.
+                  </p>
+                </div>
               )}
             </div>
           </CardContent>
