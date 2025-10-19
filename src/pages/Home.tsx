@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GraduationCap, Building, Users, FileCheck, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { SchoolHighlights } from "@/components/SchoolHighlights";
+import { Footer } from "@/components/Footer";
 
 const Home = () => {
   const [studentCredentials, setStudentCredentials] = useState({ email: "", password: "" });
@@ -277,6 +279,12 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* School Highlights Carousel */}
+      <SchoolHighlights />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
