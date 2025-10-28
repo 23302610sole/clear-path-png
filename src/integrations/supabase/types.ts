@@ -43,10 +43,16 @@ export type Database = {
       }
       clearance_records: {
         Row: {
+          amount_owing: number | null
+          approval_timestamp: string | null
+          books_outstanding: number | null
           cleared_at: string | null
           cleared_by: string | null
           created_at: string
+          date_of_cancellation: string | null
           department: string
+          digital_signature: string | null
+          equipment_outstanding: string | null
           id: string
           notes: string | null
           status: string
@@ -55,10 +61,16 @@ export type Database = {
           updated_by: string
         }
         Insert: {
+          amount_owing?: number | null
+          approval_timestamp?: string | null
+          books_outstanding?: number | null
           cleared_at?: string | null
           cleared_by?: string | null
           created_at?: string
+          date_of_cancellation?: string | null
           department: string
+          digital_signature?: string | null
+          equipment_outstanding?: string | null
           id?: string
           notes?: string | null
           status?: string
@@ -67,10 +79,16 @@ export type Database = {
           updated_by: string
         }
         Update: {
+          amount_owing?: number | null
+          approval_timestamp?: string | null
+          books_outstanding?: number | null
           cleared_at?: string | null
           cleared_by?: string | null
           created_at?: string
+          date_of_cancellation?: string | null
           department?: string
+          digital_signature?: string | null
+          equipment_outstanding?: string | null
           id?: string
           notes?: string | null
           status?: string
@@ -158,36 +176,69 @@ export type Database = {
       students: {
         Row: {
           auth_migrated: boolean | null
+          campus_hall: string | null
+          clearance_initiated_at: string | null
+          clearance_reason:
+            | Database["public"]["Enums"]["clearance_reason"]
+            | null
+          course_code: string | null
           created_at: string
           department: string
           email: string
+          forwarding_address: string | null
           full_name: string
+          home_address: string | null
           id: string
           phone: string | null
+          room_number: string | null
+          sponsor: string | null
           student_id: string
           updated_at: string
+          year_level: string | null
         }
         Insert: {
           auth_migrated?: boolean | null
+          campus_hall?: string | null
+          clearance_initiated_at?: string | null
+          clearance_reason?:
+            | Database["public"]["Enums"]["clearance_reason"]
+            | null
+          course_code?: string | null
           created_at?: string
           department: string
           email: string
+          forwarding_address?: string | null
           full_name: string
+          home_address?: string | null
           id?: string
           phone?: string | null
+          room_number?: string | null
+          sponsor?: string | null
           student_id: string
           updated_at?: string
+          year_level?: string | null
         }
         Update: {
           auth_migrated?: boolean | null
+          campus_hall?: string | null
+          clearance_initiated_at?: string | null
+          clearance_reason?:
+            | Database["public"]["Enums"]["clearance_reason"]
+            | null
+          course_code?: string | null
           created_at?: string
           department?: string
           email?: string
+          forwarding_address?: string | null
           full_name?: string
+          home_address?: string | null
           id?: string
           phone?: string | null
+          room_number?: string | null
+          sponsor?: string | null
           student_id?: string
           updated_at?: string
+          year_level?: string | null
         }
         Relationships: []
       }
@@ -227,6 +278,13 @@ export type Database = {
     }
     Enums: {
       app_role: "student" | "department_officer" | "admin"
+      clearance_reason:
+        | "discontinue"
+        | "end_of_year"
+        | "withdrawal"
+        | "non_residence"
+        | "exclusion"
+        | "industrial"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -355,6 +413,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["student", "department_officer", "admin"],
+      clearance_reason: [
+        "discontinue",
+        "end_of_year",
+        "withdrawal",
+        "non_residence",
+        "exclusion",
+        "industrial",
+      ],
     },
   },
 } as const

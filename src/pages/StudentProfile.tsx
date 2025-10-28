@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Camera, Save } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,6 +21,14 @@ const StudentProfile = () => {
     full_name: "",
     phone: "",
     email: "",
+    course_code: "",
+    year_level: "",
+    sponsor: "",
+    home_address: "",
+    forwarding_address: "",
+    campus_hall: "",
+    room_number: "",
+    clearance_reason: "" as "discontinue" | "end_of_year" | "withdrawal" | "non_residence" | "exclusion" | "industrial" | "",
   });
   const [avatarUrl, setAvatarUrl] = useState("");
   const [saving, setSaving] = useState(false);
@@ -39,6 +49,14 @@ const StudentProfile = () => {
         full_name: studentProfile.full_name,
         phone: studentProfile.phone || "",
         email: studentProfile.email,
+        course_code: studentProfile.course_code || "",
+        year_level: studentProfile.year_level || "",
+        sponsor: studentProfile.sponsor || "",
+        home_address: studentProfile.home_address || "",
+        forwarding_address: studentProfile.forwarding_address || "",
+        campus_hall: studentProfile.campus_hall || "",
+        room_number: studentProfile.room_number || "",
+        clearance_reason: studentProfile.clearance_reason || "",
       });
     }
   }, [studentProfile]);
@@ -58,6 +76,14 @@ const StudentProfile = () => {
         .update({
           full_name: formData.full_name,
           phone: formData.phone,
+          course_code: formData.course_code,
+          year_level: formData.year_level,
+          sponsor: formData.sponsor,
+          home_address: formData.home_address,
+          forwarding_address: formData.forwarding_address,
+          campus_hall: formData.campus_hall,
+          room_number: formData.room_number,
+          clearance_reason: formData.clearance_reason || null,
         })
         .eq('id', studentProfile.id);
 
@@ -143,41 +169,139 @@ const StudentProfile = () => {
 
             {/* Form Fields */}
             <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="full_name">Full Name</Label>
+                  <Input
+                    id="full_name"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleInputChange}
+                    placeholder="Enter your full name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    disabled
+                    className="bg-muted"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="course_code">Course Code</Label>
+                  <Input
+                    id="course_code"
+                    name="course_code"
+                    value={formData.course_code}
+                    onChange={handleInputChange}
+                    placeholder="e.g., CS101"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="year_level">Year Level</Label>
+                  <Input
+                    id="year_level"
+                    name="year_level"
+                    value={formData.year_level}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Year 1, Year 2"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sponsor">Sponsor</Label>
+                  <Input
+                    id="sponsor"
+                    name="sponsor"
+                    value={formData.sponsor}
+                    onChange={handleInputChange}
+                    placeholder="Sponsor name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="campus_hall">Campus Hall</Label>
+                  <Input
+                    id="campus_hall"
+                    name="campus_hall"
+                    value={formData.campus_hall}
+                    onChange={handleInputChange}
+                    placeholder="Hall name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="room_number">Room Number</Label>
+                  <Input
+                    id="room_number"
+                    name="room_number"
+                    value={formData.room_number}
+                    onChange={handleInputChange}
+                    placeholder="Room number"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
-                <Input
-                  id="full_name"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleInputChange}
-                  placeholder="Enter your full name"
+                <Label htmlFor="home_address">Home Address</Label>
+                <Textarea
+                  id="home_address"
+                  name="home_address"
+                  value={formData.home_address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, home_address: e.target.value }))}
+                  placeholder="Enter your home address"
+                  rows={2}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  disabled
-                  className="bg-muted"
+                <Label htmlFor="forwarding_address">Forwarding Address</Label>
+                <Textarea
+                  id="forwarding_address"
+                  name="forwarding_address"
+                  value={formData.forwarding_address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, forwarding_address: e.target.value }))}
+                  placeholder="Enter your forwarding address"
+                  rows={2}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Email cannot be changed
-                </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter your phone number"
-                />
+                <Label htmlFor="clearance_reason">Reason for Clearance</Label>
+                <Select
+                  value={formData.clearance_reason}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, clearance_reason: value as any }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a reason" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="end_of_year">End of Year</SelectItem>
+                    <SelectItem value="discontinue">Discontinue</SelectItem>
+                    <SelectItem value="withdrawal">Withdrawal</SelectItem>
+                    <SelectItem value="non_residence">Non-Residence</SelectItem>
+                    <SelectItem value="exclusion">Exclusion</SelectItem>
+                    <SelectItem value="industrial">Industrial Attachment</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

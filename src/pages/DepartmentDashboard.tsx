@@ -245,6 +245,11 @@ const DepartmentDashboard = () => {
                           </CardTitle>
                           <CardDescription>
                             Student ID: {record.student?.student_id} | Department: {record.student?.department}
+                            {record.student?.clearance_reason && (
+                              <span className="ml-2 text-primary font-medium">
+                                • {record.student.clearance_reason.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                              </span>
+                            )}
                           </CardDescription>
                         </div>
                         <div className="flex items-center gap-2">
@@ -311,18 +316,67 @@ const DepartmentDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="status">Clearance Status</Label>
-                      <Select value={selectedStatus} onValueChange={(value: 'pending' | 'cleared' | 'blocked') => setSelectedStatus(value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="cleared">Cleared</SelectItem>
-                          <SelectItem value="blocked">Blocked</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="status">Clearance Status</Label>
+                        <Select value={selectedStatus} onValueChange={(value: 'pending' | 'cleared' | 'blocked') => setSelectedStatus(value)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="cleared">Cleared</SelectItem>
+                            <SelectItem value="blocked">Blocked</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {(departmentProfile.department === 'Accounts Office' || departmentProfile.department === 'Mess') && (
+                        <div>
+                          <Label htmlFor="amount_owing">Amount Owing</Label>
+                          <Input
+                            id="amount_owing"
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            defaultValue={selectedStudent.amount_owing || ''}
+                          />
+                        </div>
+                      )}
+
+                      {(departmentProfile.department === 'Library' || departmentProfile.department === 'Bookshop') && (
+                        <div>
+                          <Label htmlFor="books_outstanding">Books Outstanding</Label>
+                          <Input
+                            id="books_outstanding"
+                            type="number"
+                            placeholder="0"
+                            defaultValue={selectedStudent.books_outstanding || 0}
+                          />
+                        </div>
+                      )}
+
+                      {departmentProfile.department === 'AV Unit' && (
+                        <div>
+                          <Label htmlFor="equipment_outstanding">Equipment Outstanding</Label>
+                          <Input
+                            id="equipment_outstanding"
+                            placeholder="List equipment..."
+                            defaultValue={selectedStudent.equipment_outstanding || ''}
+                          />
+                        </div>
+                      )}
+
+                      {departmentProfile.department === 'Mess' && (
+                        <div>
+                          <Label htmlFor="date_of_cancellation">Date of Cancellation</Label>
+                          <Input
+                            id="date_of_cancellation"
+                            type="date"
+                            defaultValue={selectedStudent.date_of_cancellation || ''}
+                          />
+                        </div>
+                      )}
                     </div>
                     
                     <div>

@@ -140,6 +140,16 @@ const StudentDashboard = () => {
                       <h1 className="text-2xl font-bold text-foreground">{studentProfile.full_name}</h1>
                       <p className="text-muted-foreground font-medium">ID: {studentProfile.student_id}</p>
                       <p className="text-muted-foreground">{studentProfile.department} Department</p>
+                      {studentProfile.clearance_reason && (
+                        <p className="text-sm text-primary font-medium mt-1">
+                          Clearance: {studentProfile.clearance_reason.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </p>
+                      )}
+                      {(studentProfile.course_code || studentProfile.year_level) && (
+                        <p className="text-sm text-muted-foreground">
+                          {studentProfile.course_code} {studentProfile.year_level && `• ${studentProfile.year_level}`}
+                        </p>
+                      )}
                       <p className="text-sm text-muted-foreground">{studentProfile.email}</p>
                     </div>
                   </div>

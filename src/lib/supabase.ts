@@ -11,6 +11,15 @@ export interface Student {
   email: string
   department: string
   phone?: string
+  course_code?: string
+  year_level?: string
+  sponsor?: string
+  home_address?: string
+  forwarding_address?: string
+  campus_hall?: string
+  room_number?: string
+  clearance_reason?: 'discontinue' | 'end_of_year' | 'withdrawal' | 'non_residence' | 'exclusion' | 'industrial'
+  clearance_initiated_at?: string
   auth_migrated: boolean
   created_at: string
   updated_at: string
@@ -45,6 +54,12 @@ export interface ClearanceRecord {
   cleared_by?: string
   cleared_at?: string
   updated_by: string
+  amount_owing?: number
+  books_outstanding?: number
+  equipment_outstanding?: string
+  date_of_cancellation?: string
+  digital_signature?: string
+  approval_timestamp?: string
   created_at: string
   updated_at: string
 }
