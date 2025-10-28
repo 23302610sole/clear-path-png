@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GraduationCap, Building, Users, FileCheck, Shield } from "lucide-react";
+import { GraduationCap, Building, Building2, Users, FileCheck, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SchoolHighlights } from "@/components/SchoolHighlights";
 import { Footer } from "@/components/Footer";
@@ -150,9 +150,10 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto">
             <Tabs defaultValue="student" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="student">Student</TabsTrigger>
                 <TabsTrigger value="department">Department</TabsTrigger>
+                <TabsTrigger value="hall">Hall</TabsTrigger>
                 <TabsTrigger value="admin">Admin</TabsTrigger>
               </TabsList>
 
@@ -224,6 +225,32 @@ const Home = () => {
                       disabled={loading}
                     >
                       Go to Department Portal
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="hall">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Building2 className="w-5 h-5" />
+                      Hall of Residence
+                    </CardTitle>
+                    <CardDescription>
+                      Access the hall residence management portal
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      Manage property returns and conduct room inspections for students.
+                    </p>
+                    <Button 
+                      className="w-full" 
+                      onClick={() => navigate('/hall-residence')}
+                      disabled={loading}
+                    >
+                      Go to Hall Portal
                     </Button>
                   </CardContent>
                 </Card>

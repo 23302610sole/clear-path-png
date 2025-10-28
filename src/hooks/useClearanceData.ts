@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase, DEPARTMENTS, isSupabaseConfigured } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
+import { generateClearanceCertificate as generatePDF } from '@/lib/pdfGenerator'
 
 export interface ClearanceStatus {
   department: string
@@ -221,17 +222,25 @@ export const useClearanceData = () => {
   }
 
   const generateClearanceCertificate = async (studentId: string) => {
-    try {
-      // This would generate a PDF certificate
-      // For now, we'll just show a success message
+    if (!studentProfile) {
       toast({
-        title: 'Certificate Generated',
-        description: 'Clearance certificate has been generated',
-      })
+        title: "Error",
+        description: "Student profile not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await generatePDF(studentProfile, clearanceData);
+      toast({
+        title: "Success",
+        description: "Clearance certificate generated successfully",
+      });
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to generate certificate',
+        description: error.message || 'Failed to generate certificate',
         variant: 'destructive'
       })
     }

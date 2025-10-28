@@ -173,6 +173,160 @@ export type Database = {
         }
         Relationships: []
       }
+      property_returns: {
+        Row: {
+          chair_returned: boolean | null
+          created_at: string
+          id: string
+          key_returned: boolean | null
+          mattress_returned: boolean | null
+          notes: string | null
+          proxy_card_returned: boolean | null
+          student_id: string
+          updated_at: string
+          verification_date: string | null
+          verification_signature: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          chair_returned?: boolean | null
+          created_at?: string
+          id?: string
+          key_returned?: boolean | null
+          mattress_returned?: boolean | null
+          notes?: string | null
+          proxy_card_returned?: boolean | null
+          student_id: string
+          updated_at?: string
+          verification_date?: string | null
+          verification_signature?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          chair_returned?: boolean | null
+          created_at?: string
+          id?: string
+          key_returned?: boolean | null
+          mattress_returned?: boolean | null
+          notes?: string | null
+          proxy_card_returned?: boolean | null
+          student_id?: string
+          updated_at?: string
+          verification_date?: string | null
+          verification_signature?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_returns_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_inspections: {
+        Row: {
+          approval_date: string | null
+          ceiling_notes: string | null
+          ceiling_status: string | null
+          created_at: string
+          door_notes: string | null
+          door_status: string | null
+          flywire_notes: string | null
+          flywire_status: string | null
+          id: string
+          light_switches_notes: string | null
+          light_switches_status: string | null
+          lights_notes: string | null
+          lights_status: string | null
+          lock_notes: string | null
+          lock_status: string | null
+          lodge_name: string | null
+          lodge_number: string | null
+          power_points_notes: string | null
+          power_points_status: string | null
+          student_id: string
+          study_table_notes: string | null
+          study_table_status: string | null
+          sub_warden_approved: boolean | null
+          sub_warden_name: string | null
+          sub_warden_signature: string | null
+          updated_at: string
+          walls_notes: string | null
+          walls_status: string | null
+        }
+        Insert: {
+          approval_date?: string | null
+          ceiling_notes?: string | null
+          ceiling_status?: string | null
+          created_at?: string
+          door_notes?: string | null
+          door_status?: string | null
+          flywire_notes?: string | null
+          flywire_status?: string | null
+          id?: string
+          light_switches_notes?: string | null
+          light_switches_status?: string | null
+          lights_notes?: string | null
+          lights_status?: string | null
+          lock_notes?: string | null
+          lock_status?: string | null
+          lodge_name?: string | null
+          lodge_number?: string | null
+          power_points_notes?: string | null
+          power_points_status?: string | null
+          student_id: string
+          study_table_notes?: string | null
+          study_table_status?: string | null
+          sub_warden_approved?: boolean | null
+          sub_warden_name?: string | null
+          sub_warden_signature?: string | null
+          updated_at?: string
+          walls_notes?: string | null
+          walls_status?: string | null
+        }
+        Update: {
+          approval_date?: string | null
+          ceiling_notes?: string | null
+          ceiling_status?: string | null
+          created_at?: string
+          door_notes?: string | null
+          door_status?: string | null
+          flywire_notes?: string | null
+          flywire_status?: string | null
+          id?: string
+          light_switches_notes?: string | null
+          light_switches_status?: string | null
+          lights_notes?: string | null
+          lights_status?: string | null
+          lock_notes?: string | null
+          lock_status?: string | null
+          lodge_name?: string | null
+          lodge_number?: string | null
+          power_points_notes?: string | null
+          power_points_status?: string | null
+          student_id?: string
+          study_table_notes?: string | null
+          study_table_status?: string | null
+          sub_warden_approved?: boolean | null
+          sub_warden_name?: string | null
+          sub_warden_signature?: string | null
+          updated_at?: string
+          walls_notes?: string | null
+          walls_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_inspections_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           auth_migrated: boolean | null

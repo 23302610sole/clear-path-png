@@ -12,6 +12,7 @@ import DepartmentDetail from "./pages/DepartmentDetail";
 import DepartmentDashboard from "./pages/DepartmentDashboard";
 import DepartmentPortal from "./pages/DepartmentPortal";
 import DepartmentLogin from "./pages/DepartmentLogin";
+import HallResidencePortal from "./pages/HallResidencePortal";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/department-portal" element={<DepartmentPortal />} />
             <Route path="/department-login/:departmentCode" element={<DepartmentLogin />} />
             <Route path="/department" element={<DepartmentDashboard />} />
+            <Route path="/hall-residence" element={<HallResidencePortal />} />
             <Route path="/admin" element={<AdminDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
