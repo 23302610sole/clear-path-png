@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AutoRedirect } from "@/components/AutoRedirect";
 import Home from "./pages/Home";
+import StudentLogin from "./pages/StudentLogin";
 import StudentDashboard from "./pages/StudentDashboard";
 import StudentProfile from "./pages/StudentProfile";
 import DepartmentDetail from "./pages/DepartmentDetail";
@@ -13,6 +14,7 @@ import DepartmentDashboard from "./pages/DepartmentDashboard";
 import DepartmentPortal from "./pages/DepartmentPortal";
 import DepartmentLogin from "./pages/DepartmentLogin";
 import HallResidencePortal from "./pages/HallResidencePortal";
+import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -28,6 +30,7 @@ const App = () => (
           <AutoRedirect />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/student-login" element={<StudentLogin />} />
             <Route path="/student" element={<StudentDashboard />} />
             <Route path="/student/profile" element={<StudentProfile />} />
             <Route path="/student/department/:department" element={<DepartmentDetail />} />
@@ -35,6 +38,7 @@ const App = () => (
             <Route path="/department-login/:departmentCode" element={<DepartmentLogin />} />
             <Route path="/department" element={<DepartmentDashboard />} />
             <Route path="/hall-residence" element={<HallResidencePortal />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

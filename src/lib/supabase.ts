@@ -75,9 +75,26 @@ export interface Department {
 // Department constants
 export const DEPARTMENTS = [
   { name: 'Library', code: 'LIB' },
-  { name: 'SS&FC', code: 'SSFC' },
-  { name: 'Mess', code: 'MESS' },
   { name: 'AV Unit', code: 'AV' },
   { name: 'Bookshop', code: 'BOOK' },
-  { name: 'Accounts Office', code: 'ACC' }
+  { name: 'The Catering Company', code: 'MESS' },
+  { name: 'ATCDI Library', code: 'ATCDI' },
+  { name: 'Business Department', code: 'BUS' },
+  { name: 'Business IT', code: 'BIT' },
+  { name: 'Architecture', code: 'ARCH' },
+  { name: 'Construction Management', code: 'CM' },
+  { name: 'Communication Development Studies', code: 'CDS' },
+  { name: 'Surveying', code: 'SURV' },
+  { name: 'Geographical Instrumental Studies', code: 'GIS' },
+  { name: 'Mining', code: 'MIN' },
+  { name: 'Mineral Processing', code: 'MP' },
+  { name: 'Electrical Engineering', code: 'EE' },
+  { name: 'Mechanical Engineering', code: 'ME' },
+  { name: 'Biomedical Engineering', code: 'BME' },
+  { name: 'Food Technology', code: 'FT' },
+  { name: 'Applied Chemistry', code: 'ACHEM' },
+  { name: 'Applied Physics', code: 'APHYS' },
+  { name: 'Agriculture', code: 'AGR' },
+  { name: 'Mathematics and Computer Science', code: 'MCS' },
+  { name: 'Civil Engineering', code: 'CE' }
 ] as const
